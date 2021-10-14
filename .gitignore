@@ -1,0 +1,9 @@
+.idea
+*.a
+~'$'*.docx
+~'$'*.ppt
+~'$'*.pptx
+~'$'*.xls
+
+readme.md
+!/readme.md

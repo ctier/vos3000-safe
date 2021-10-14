@@ -1,0 +1,63 @@
+#!/bin/bash
+#description: safe
+#chkconfig: 235 90 90 
+#running os: CentOS 6.x
+#ettings user
+export VOS_SAFE_USERNAME=vos
+export VOS_SAFE_PASSWORD=vos
+# Library
+if [ -f /etc/init.d/functions ]; then
+	. /etc/init.d/functions
+elif [ -f /etc/rc.d/init.d/functions ]; then
+	. /etc/rc.d/init.d/functions
+fi
+
+# Path
+prog=safe
+execbase="/usr/local/bin/safe >> /var/log/safe.log 2>&1 &"
+execpath="${execbase} "
+pidfile=/var/run/${prog}.pid
+lockfile=/var/lock/subsys/${prog}
+
+RETVAL=0
+
+# Service
+start() {
+	echo -n $"Starting $prog: "
+	daemon $execpath
+	RETVAL=$?
+	echo
+	[ $RETVAL = 0  ] && touch ${lockfile}
+	return $RETVAL
+}
+
+stop() {
+	echo -n $"Stopping $prog: "
+	killproc $execbase
+	RETVAL=$?
+	echo
+	[ $RETVAL = 0 ] && rm -f ${lockfile} ${pidfile}
+}
+
+# Call
+case "$1" in
+  start)
+	start
+	;;
+  stop)
+	stop
+	;;
+  status)
+	status $execbase
+	RETVAL=$?
+	;;
+  restart)
+	stop
+	start
+	;;
+  *)
+	echo $"Usage: $prog {start|stop|restart|status}"
+	RETVAL=2
+esac
+
+exit $RETVAL
