@@ -35,8 +35,6 @@ jobs:
       - name: Prepare for upload
         shell: bash
         run: |
-          mv safe-linux-amd64 safe-linux-amd64
-          mv safe-linux-arm64 safe-linux-arm64
           sha256sum safe-linux-{amd64,arm64} > sha256sum.txt
 
 #      - name : Upload packages
