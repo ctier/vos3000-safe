@@ -10,16 +10,20 @@ export VOS_SAFE_PASSWORD=vos
 ## 在系统centos 6.x 64位 2.1.6.0测试通过，安装步骤如下
 ```shell
 #safe
-curltps://oss.1nth.com/vospag/iptables -o /etc/sysconfig/iptables
+curl https://cdn.jsdelivr.net/gh/21ki/vos3000-safe@main/scripts/iptables -o /etc/sysconfig/iptables
 #增加白名单 ims     iptables  -I INPUT -s 10.0.0.0/8 -j ACCEPT  && service iptables save
 echo -e "01 01 * * * /etc/init.d/iptables restart" >> /var/spool/cron/root
+#使用ssl自签证书防止注入
 HOST=$(ip addr|grep inet|grep brd|grep -v "lo:"| awk  '{print $2}'|awk -F"/" '{print $1}'  | grep -Ev "^10|^172|^100|^192")
 [  -z  "$HOST" ] && HOST=$(ip addr|grep inet|grep brd|grep -v "lo:"| awk  '{print $2}'|awk -F"/" '{print $1}')
 echo $HOST
 openssl rand -writerand .rnd
 openssl req -x509 -nodes -days 3650 -newkey rsa:2048 -keyout /etc/ssl/key.pem -out /etc/ssl/cert.pem -subj "/O=${HOST}/CN=${HOST}"
-curl http://release -o /etc/init.d/safed
-curl http://release -o /usr/local/bin/safe
+#使用代理地址下载，防止github慢的问题
+curl https://cdn.jsdelivr.net/gh/21ki/vos3000-safe@main/scripts/safed -o /etc/init.d/safed
+#获取releases最新版本并下载
+RELEASE_VERSION=$(wget -qO- -t1 -T2 "https://api.github.com/repos/21ki/vos3000-safe/releases/latest" | grep "tag_name" | head -n 1 | awk -F ":" '{print $2}' | sed 's/\"//g;s/,//g;s/ //g')
+curl https://ghproxy.com/https://github.com/21ki/vos3000-safe/releases/download/${RELEASE_VERSION}/safe-linux-amd64 -o /usr/local/bin/safe
 chmod +x /etc/init.d/safed
 chmod +x /usr/local/bin/safe
 #dos2unix /etc/init.d/safed   dos2unix -k -o filename
